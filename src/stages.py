@@ -31,18 +31,13 @@ def run_java(state, stage, jar_path, mem, args):
 class Stages(object):
     def __init__(self, state):
         self.state = state
-        self.reference = self.get_options('ref_grch37')
-        self.dbsnp_grch37 = self.get_options('dbsnp_grch37')
-        self.mills_grch37 = self.get_options('mills_grch37')
-        self.one_k_g_grch37_indels = self.get_options('one_k_g_grch37_indels')
-        self.one_k_g_snps = self.get_options('one_k_g_snps')
+        self.reference = self.get_options('reference')
+        self.dbsnp = self.get_options('dbsnp')
+        self.mills = self.get_options('mills')
         self.one_k_g_indels = self.get_options('one_k_g_indels')
+        self.one_k_g_snps = self.get_options('one_k_g_snps')
         self.one_k_g_highconf_snps = self.get_options('one_k_g_highconf_snps')
         self.hapmap = self.get_options('hapmap')
-        self.interval_grch37 = self.get_options('interval_grch37')
-        self.CEU_mergeGvcf = self.get_options('CEU_mergeGvcf')
-        self.GBR_mergeGvcf = self.get_options('GBR_mergeGvcf')
-        self.FIN_mergeGvcf = self.get_options('FIN_mergeGvcf')
 
     def run_picard(self, stage, args):
         mem = int(self.state.config.get_stage_options(stage, 'mem'))
@@ -106,12 +101,11 @@ class Stages(object):
         bam_in, _metrics_dup = inputs
         cores = self.get_stage_options('chrom_intervals_gatk', 'cores')
         gatk_args = '-T RealignerTargetCreator -R {reference} -I {bam} ' \
-                    '--num_threads {threads} --known {mills_grch37} ' \
-                    '--known {one_k_g_grch37_indels} -L {interval_grch37} ' \
+                    '--num_threads {threads} --known {mills} ' \
+                    '--known {one_k_g_indels} ' \
                     '-o {out}'.format(reference=self.reference, bam=bam_in,
-                            threads=cores, mills_grch37=self.mills_grch37,
-                            one_k_g_grch37_indels=self.one_k_g_grch37_indels,
-                            interval_grch37=self.interval_grch37,
+                            threads=cores, mills=self.mills,
+                            one_k_g_indels=self.one_k_g_indels,
                             out=intervals_out)
         self.run_gatk('chrom_intervals_gatk', gatk_args)
 
@@ -119,13 +113,12 @@ class Stages(object):
     def local_realignment_gatk(self, inputs, bam_out):
         '''Local realign reads using GATK'''
         target_intervals_in, bam_in = inputs
-        gatk_args = "-T IndelRealigner -R {reference} -I {bam} -L {interval_grch37} " \
-                    "-targetIntervals {target_intervals} -known {mills_grch37} " \
-                    "-known {one_k_g_grch37_indels} " \
+        gatk_args = "-T IndelRealigner -R {reference} -I {bam} " \
+                    "-targetIntervals {target_intervals} -known {mills} " \
+                    "-known {one_k_g_indels} " \
                     "-o {out}".format(reference=self.reference, bam=bam_in,
-                            mills_grch37=self.mills_grch37,
-                            one_k_g_grch37_indels=self.one_k_g_grch37_indels,
-                            interval_grch37=self.interval_grch37,
+                            mills=self.mills,
+                            one_k_g_indels=self.one_k_g_indels,
                             target_intervals=target_intervals_in,
                             out=bam_out)
         self.run_gatk('local_realignment_gatk', gatk_args)
@@ -136,11 +129,11 @@ class Stages(object):
         '''Base recalibration using GATK'''
         csv_out, log_out = outputs
         gatk_args = "-T BaseRecalibrator -R {reference} -I {bam} " \
-                    "--num_cpu_threads_per_data_thread 4 --knownSites {dbsnp_grch37} " \
-                    "--knownSites {mills_grch37} --knownSites {one_k_g_grch37_indels} " \
+                    "--num_cpu_threads_per_data_thread 4 --knownSites {dbsnp} " \
+                    "--knownSites {mills} --knownSites {one_k_g_indels} " \
                     "-log {log} -o {out}".format(reference=self.reference, bam=bam_in,
-                            mills_grch37=self.mills_grch37, dbsnp_grch37=self.dbsnp_grch37,
-                            one_k_g_grch37_indels=self.one_k_g_grch37_indels,
+                            mills=self.mills, dbsnp=self.dbsnp,
+                            one_k_g_indels=self.one_k_g_indels,
                             log=log_out, out=csv_out)
         self.run_gatk('base_recalibration_gatk', gatk_args)
 
@@ -163,8 +156,8 @@ class Stages(object):
                     "--num_cpu_threads_per_data_thread 8 " \
                     "--variant_index_type LINEAR " \
                     "--standard_min_confidence_threshold_for_emitting 30.0 " \
-                    "-I {bam} -L {interval_list} -o {out}".format(reference=self.reference,
-                            bam=bam_in, interval_list=self.interval_grch37, out=vcf_out)
+                    "-I {bam} -o {out}".format(reference=self.reference,
+                            bam=bam_in, out=vcf_out)
         self.run_gatk('call_variants_gatk', gatk_args)
 
 
@@ -184,11 +177,8 @@ class Stages(object):
         gatk_args = "-T GenotypeGVCFs -R {reference} " \
                     "--disable_auto_index_creation_and_locking_when_reading_rods " \
                     "--num_threads {cores} --variant {merged_vcf} --out {vcf_out} " \
-                    "--variant {CEU_mergeGvcf} --variant {GBR_mergeGvcf} " \
-                    "--variant {FIN_mergeGvcf}".format(reference=self.reference,
-                            cores=cores, merged_vcf=merged_vcf_in, vcf_out=vcf_out,
-                            CEU_mergeGvcf=self.CEU_mergeGvcf, GBR_mergeGvcf=self.GBR_mergeGvcf,
-                            FIN_mergeGvcf=self.FIN_mergeGvcf)
+                    .format(reference=self.reference,
+                            cores=cores, merged_vcf=merged_vcf_in, vcf_out=vcf_out)
         self.run_gatk('genotype_gvcf_gatk', gatk_args)
 
 
@@ -216,12 +206,12 @@ class Stages(object):
         cores = self.get_stage_options('indel_recalibrate_gatk', 'cores')
         gatk_args = "-T VariantRecalibrator --disable_auto_index_creation_and_locking_when_reading_rods " \
                     "-R {reference} --minNumBadVariants 5000 --num_threads {cores} " \
-                    "-resource:mills,known=false,training=true,truth=true,prior=12.0 {mills_grch37} " \
+                    "-resource:mills,known=false,training=true,truth=true,prior=12.0 {mills} " \
                     "-resource:1000G,known=false,training=true,truth=true,prior=10.0 {one_k_g_indels} " \
                     "-an MQRankSum -an ReadPosRankSum -an FS -input {genotype_vcf} -recalFile {recal_indel} " \
                     "-tranchesFile {tranches_indel} -rscriptFile {indel_plots} " \
                     " -mode INDEL".format(reference=self.reference,
-                            cores=cores, mills_grch37=self.mills_grch37, one_k_g_indels=self.one_k_g_indels,
+                            cores=cores, mills=self.mills, one_k_g_indels=self.one_k_g_indels,
                             genotype_vcf=genotype_vcf_in, recal_indel=recal_indel_out,
                             tranches_indel=tranches_indel_out, indel_plots=indel_plots_r_out)
         self.run_gatk('indel_recalibrate_gatk', gatk_args)
