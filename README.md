@@ -2,7 +2,7 @@
 
 Author: Bernie Pope (bjpope@unimelb.edu.au)
 
-complexo_pipeline is based on the [Ruffus](http://www.ruffus.org.uk/) library for writing bioinformatics pipelines. Its features include:
+lynch_gatk is based on the [Ruffus](http://www.ruffus.org.uk/) library for writing bioinformatics pipelines. Its features include:
 
  * Job submission on a cluster using DRMAA (currently only tested with SLURM).
  * Job dependency calculation and checkpointing.
@@ -17,7 +17,7 @@ complexo_pipeline is based on the [Ruffus](http://www.ruffus.org.uk/) library fo
 
 #### External dependencies
 
-`complexo_pipeline` depends on the following programs and libraries:
+`lynch_gatk` depends on the following programs and libraries:
 
  * [python](https://www.python.org/download/releases/2.7.5/) (version 2.7.5)
  * [DRMAA](http://www.drmaa.org/) for submitting jobs to the cluster (it uses the Python wrapper to do this). 
@@ -34,15 +34,15 @@ I recommend using a virtual environment:
 
 ```
 cd /place/to/install
-virtualenv complexo_pipeline
-source complexo_pipeline/bin/activate
-pip install -U https://github.com/bjpop/complexo_pipeline
+virtualenv lynch_gatk
+source lynch_gatk/bin/activate
+pip install -U https://github.com/bjpop/lynch_gatk
 ```
 
 If you don't want to use a virtual environment then you can just install with pip:
 
 ```
-pip install -U https://github.com/bjpop/complexo_pipeline
+pip install -U https://github.com/bjpop/lynch_gatk
 ```
 
 ## Worked example
@@ -53,15 +53,15 @@ The `example` directory in the source distribution contains a small dataset to i
 
 ```
 cd /path/to/test/directory
-git clone https://github.com/bjpop/complexo_pipeline
+git clone https://github.com/bjpop/lynch_gatk
 ```
 
-#### Install `complexo_pipeline` as described above
+#### Install `lynch_gatk` as described above
 
 #### Get a reference genome.
 
 ```
-cd complexo_pipeline/example
+cd lynch_gatk/example
 mkdir reference
 # copy your reference into this directory, or make a symbolic link
 # call it reference/genome.fa
@@ -75,22 +75,22 @@ For example (this will depend on your local settings):
 export DRMAA_LIBRARY_PATH=/usr/local/slurm_drmaa/1.0.7-gcc/lib/libdrmaa.so
 ```
 
-#### Run `complexo_pipeline` and ask it what it will do next
+#### Run `lynch_gatk` and ask it what it will do next
 
 ```
-complexo_pipeline -n --verbose 3
+lynch_gatk -n --verbose 3
 ```
 
 #### Generate a flowchart diagram
 
 ```
-complexo_pipeline --flowchart pipeline_flow.png --flowchart_format png
+lynch_gatk --flowchart pipeline_flow.png --flowchart_format png
 ```
 
 #### Run the pipeline
 
 ```
-complexo_pipeline --use_threads --log_file pipeline.log --jobs 2 --verbose 3
+lynch_gatk --use_threads --log_file pipeline.log --jobs 2 --verbose 3
 ```
 
 ## Usage
@@ -98,8 +98,8 @@ complexo_pipeline --use_threads --log_file pipeline.log --jobs 2 --verbose 3
 You can get a summary of the command line arguments like so:
 
 ```
-complexo_pipeline -h
-usage: complexo_pipeline [-h] [--verbose [VERBOSE]] [-L FILE] [-T JOBNAME]
+lynch_gatk -h
+usage: lynch_gatk [-h] [--verbose [VERBOSE]] [-L FILE] [-T JOBNAME]
                          [-j N] [--use_threads] [-n] [--touch_files_only]
                          [--recreate_database] [--checksum_file_name FILE]
                          [--flowchart FILE] [--key_legend_in_graph]

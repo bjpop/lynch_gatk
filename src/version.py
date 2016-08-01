@@ -8,4 +8,4 @@ configuration.
 
 import pkg_resources  # part of setuptools
 
-version = pkg_resources.require("complexo_pipeline")[0].version
+version = pkg_resources.require("lynch_gatk")[0].version

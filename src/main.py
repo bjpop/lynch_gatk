@@ -7,7 +7,7 @@ Copyright: 2015
 
 See ../README.md for details about how to use the program.
 
-Repository: https://github.com/bjpop/complexo_pipeline
+Repository: https://github.com/bjpop/lynch_gatk
 '''
 
 from __future__ import print_function
