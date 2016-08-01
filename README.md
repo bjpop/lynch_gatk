@@ -1,5 +1,8 @@
 # A bioinformatics pipeline based on [Ruffus](http://www.ruffus.org.uk/)
 
+[![DOI](https://zenodo.org/badge/23600/bjpop/lynch_gatk.svg)](https://zenodo.org/badge/latestdoi/23600/bjpop/lynch_gatk)
+
+
 Author: Bernie Pope (bjpope@unimelb.edu.au)
 
 lynch_gatk is based on the [Ruffus](http://www.ruffus.org.uk/) library for writing bioinformatics pipelines. Its features include:
